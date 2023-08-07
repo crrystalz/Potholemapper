@@ -1,7 +1,7 @@
 *.pt
 
 testing/
-# data/
+data/
 
 detection_model/datasets/
 detection_model/runs/
