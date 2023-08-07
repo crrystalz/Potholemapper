@@ -1,0 +1,10 @@
+*.pt
+
+testing/
+# data/
+
+detection_model/datasets/
+detection_model/runs/
+detection_model/test/
+detection_model/training/
+detection_model/validation/

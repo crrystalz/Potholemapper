@@ -1,0 +1,13 @@
+train: /Users/rrishi/Documents/coding/Potholemapper_archived/Pothole Detection Model/training
+val: /Users/rrishi/Documents/coding/Potholemapper_archived/Pothole Detection Model/validation
+test: /Users/rrishi/Documents/coding/Potholemapper_archived/Pothole Detection Model/test
+
+nc: 1
+names: ['Potholes']
+
+roboflow:
+  workspace: aliva-pattnaik-ckk6t
+  project: potholes-jsa5p
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/aliva-pattnaik-ckk6t/potholes-jsa5p/dataset/1
