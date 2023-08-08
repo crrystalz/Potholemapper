@@ -1,8 +1,11 @@
-*.pt
 *.pyc
+*.DS_Store
+*.pt
 
 testing/
 data/
+
+main_tool/__pycache__
 
 detection_model/datasets/
 detection_model/runs/
