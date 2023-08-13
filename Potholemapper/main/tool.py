@@ -3,12 +3,13 @@ import sys
 import time
 import shutil
 import colorama
+import folium
 
 from colorama import Fore
 from PIL import Image
 from PIL.ExifTags import GPSTAGS, TAGS
 
-from get_exif_data import get_labeled_exif, get_location
+from gmap_downloader import GoogleMapDownloader, GoogleMapsLayers
 
 video_dir = f"../testing/videos/1.mp4"
 
@@ -63,8 +64,6 @@ def check_and_get_exif_loc(image):  # returns image if
             tag_name = TAGS.get(tag)
             if tag_name == "GPSInfo":
                 for key, val in value.items():
-                    # print(f"{GPSTAGS.get(key)} - {val}")
-
                     if GPSTAGS.get(key) == "GPSLatitude":
                         gps_coords["lat"] = val
 
@@ -211,11 +210,53 @@ def create_html(pothole_images):
     for [annotated_image, filename] in pothole_images:
         gmaps_link = print_exif_data(filename)
 
+        image_file = os.path.join(image_geotagged_dir, filename)
+        image = Image.open(image_file)
+        x, y = check_and_get_exif_loc(image)
+        if x:
+            gps_coords = y
+        
+        dec_lat = convert_deci(
+            float(gps_coords["lat"][0]),
+            float(gps_coords["lat"][1]),
+            float(gps_coords["lat"][2]),
+            gps_coords["lat_ref"],
+        )
+        dec_lon = convert_deci(
+            float(gps_coords["lon"][0]),
+            float(gps_coords["lon"][1]),
+            float(gps_coords["lon"][2]),
+            gps_coords["lon_ref"],
+        )
+
+        print(dec_lat, dec_lon)
+
+        gmd = GoogleMapDownloader(dec_lat, dec_lon, 22, GoogleMapsLayers.SATELLITE)
+
+        print("The tile coorindates are {}".format(gmd.getXY()))
+
+        try:
+            # Get the high resolution image
+            img = gmd.generateImage()
+        except IOError:
+            print("Could not generate the image - try adjusting the zoom level and checking your coordinates")
+        else:
+            # Save the image to disk
+            img.save("high_resolution_image.png")
+            print("The map has successfully been created")
+
+
+
         html.write("<tr>\n")
         html.write(
             f"<td><img src='{annotated_image}' width='500' height='500'></td>\n"
-        )  # image
-        html.write(f"<td>{gmaps_link}</td>\n")  # filename
+        )
+        html.write(
+            f"<td><embed src='{img}' width='500' height='500'></td>\n"
+        )
+        html.write(
+            f"<td><embed src='{gmaps_link}' width='500' height='500'></td>\n"
+        )
         html.write("</tr>\n")
 
     html.write("</table>\n")
@@ -236,17 +277,15 @@ pothole_images = find_pothole_frames(
     output_dir
 )  # get list of images that were detected to have potholes
 
-print("Printing exif data for images with detected potholes...")
+# print("Printing exif data for images with detected potholes...")
 
-for filename in pothole_images:
-    filename = filename[1]
-    print(filename)
-    gmaps_link = print_exif_data(filename)  # print exif data for each image with detected potholes
+# for filename in pothole_images:
+#     filename = filename[1]
+#     print(filename)
+#     gmaps_link = print_exif_data(filename)  # print exif data for each image with detected potholes
 
-print("Finished")
-print()
-print()
+# print("Finished")
+# print()
+# print()
 
 create_html(pothole_images)  # create html file with table of detected pothole image and gmaps location
-
-# f"https://maps.google.com/?q={dec_lat},{dec_lon}"
