@@ -22,22 +22,6 @@ model_name = f"yolov8x_tesladataset1.pt"
 model_path = f"../detection_model/{model_name}"
 
 
-def gmaps(gps_coords):
-    dec_lat = convert_deci(
-        float(gps_coords["lat"][0]),
-        float(gps_coords["lat"][1]),
-        float(gps_coords["lat"][2]),
-        gps_coords["lat_ref"],
-    )
-    dec_lon = convert_deci(
-        float(gps_coords["lon"][0]),
-        float(gps_coords["lon"][1]),
-        float(gps_coords["lon"][2]),
-        gps_coords["lon_ref"],
-    )
-    return f"https://maps.google.com/?q={dec_lat},{dec_lon}"
-
-
 def convert_deci(degree, minutes, seconds, direction):
     decimal_degrees = degree + minutes / 60 + seconds / 3600
     if direction == "S" or direction == "W":
@@ -51,6 +35,23 @@ def load_anim():
         sys.stdout.write(l)
         sys.stdout.flush()
         time.sleep(0.2)
+
+
+def exif_loc_to_lat_lon(gps_coords):
+    dec_lat = convert_deci(
+        float(gps_coords["lat"][0]),
+        float(gps_coords["lat"][1]),
+        float(gps_coords["lat"][2]),
+        gps_coords["lat_ref"],
+    )
+    dec_lon = convert_deci(
+        float(gps_coords["lon"][0]),
+        float(gps_coords["lon"][1]),
+        float(gps_coords["lon"][2]),
+        gps_coords["lon_ref"],
+    )
+
+    return dec_lat, dec_lon
 
 
 def check_and_get_exif_loc(image):  # returns image if
@@ -77,7 +78,7 @@ def check_and_get_exif_loc(image):  # returns image if
                         gps_coords["lon_ref"] = val
             else:
                 pass
-                print(Fore.WHITE + f"{tag_name} - {value}")
+                # print(Fore.WHITE + f"{tag_name} - {value}")
 
         if gps_coords:
             return True, gps_coords
@@ -85,14 +86,19 @@ def check_and_get_exif_loc(image):  # returns image if
     return False, []
 
 
-def print_exif_data(filename):
+def gmaps(filename):
     image_file = os.path.join(image_geotagged_dir, filename)
     image = Image.open(image_file)
     x, y = check_and_get_exif_loc(image)
     if x:
         gps_coords = y
-        print(Fore.RED + "\n" + gmaps(gps_coords) + Fore.WHITE)
-        return gmaps(gps_coords)
+
+        dec_lat, dec_lon = exif_loc_to_lat_lon(gps_coords)
+
+        gmaps = f"https://maps.google.com/?q={dec_lat},{dec_lon}"
+        
+        print(Fore.RED + "\n" + gmaps + Fore.WHITE)
+        return gmaps
 
 
 def find_files_with_exif():
@@ -190,7 +196,7 @@ def find_pothole_frames(output_dir):
             # print(f"{folder} has a detected pothole(s)")
             for filename in os.listdir(os.path.join(output_dir, folder)):
                 if filename.endswith(".png") or filename.endswith(".jpg"):
-                    pothole_images.append([os.path.join(output_dir, folder, filename), filename])
+                    pothole_images.append([os.path.join(output_dir, folder, filename), os.path.join(image_geotagged_dir, filename), filename]) #1 is annoted image dir, 2 is geotagged image dir, 3 is filename
 
         else:
             pass
@@ -202,32 +208,20 @@ def find_pothole_frames(output_dir):
 def create_html(pothole_images):
     print("Creating HTML file...")
 
-    html = open("pothole_img_gmap_table.html", "w+")
+    html = open("/main_output/pothole_img_gmap_table.html", "w+")
     html.write("<html>\n")
     html.write("<body>\n")
     html.write("<table>\n")
 
-    for [annotated_image, filename] in pothole_images:
-        gmaps_link = print_exif_data(filename)
+    for [annotated_image_dir, geotagged_image_dir, filename] in pothole_images:
+        gmaps_link = gmaps(filename)
 
-        image_file = os.path.join(image_geotagged_dir, filename)
-        image = Image.open(image_file)
+        image = Image.open(geotagged_image_dir)
         x, y = check_and_get_exif_loc(image)
         if x:
             gps_coords = y
         
-        dec_lat = convert_deci(
-            float(gps_coords["lat"][0]),
-            float(gps_coords["lat"][1]),
-            float(gps_coords["lat"][2]),
-            gps_coords["lat_ref"],
-        )
-        dec_lon = convert_deci(
-            float(gps_coords["lon"][0]),
-            float(gps_coords["lon"][1]),
-            float(gps_coords["lon"][2]),
-            gps_coords["lon_ref"],
-        )
+        dec_lat, dec_lon = exif_loc_to_lat_lon(gps_coords)
 
         print(dec_lat, dec_lon)
 
@@ -249,7 +243,7 @@ def create_html(pothole_images):
 
         html.write("<tr>\n")
         html.write(
-            f"<td><img src='{annotated_image}' width='500' height='500'></td>\n"
+            f"<td><img src='{annotated_image_dir}' width='500' height='500'></td>\n"
         )
         html.write(
             f"<td><embed src='{img}' width='500' height='500'></td>\n"
@@ -273,19 +267,25 @@ def create_html(pothole_images):
 
 # detect(image_geotagged_dir, output_dir, model_path)  # detect function (run yolo)
 
+map = folium.Map(location = [37.40, -122.13], zoom_start = 15)
+
 pothole_images = find_pothole_frames(
     output_dir
 )  # get list of images that were detected to have potholes
 
-# print("Printing exif data for images with detected potholes...")
+for annoted_image_dir, geotagged_image_dir, filename in pothole_images:
+    print(filename)
+    gmaps_link = gmaps(filename) # prints and returns gmaps link
 
-# for filename in pothole_images:
-#     filename = filename[1]
-#     print(filename)
-#     gmaps_link = print_exif_data(filename)  # print exif data for each image with detected potholes
+    image = Image.open(geotagged_image_dir)
+    x, y = check_and_get_exif_loc(image)
+    if x:
+        gps_coords = y
+    
+        dec_lat, dec_lon = exif_loc_to_lat_lon(gps_coords)
 
-# print("Finished")
-# print()
-# print()
+        folium.Marker([dec_lat, dec_lon], popup='Point').add_to(map)
 
-create_html(pothole_images)  # create html file with table of detected pothole image and gmaps location
+map.save("map.html")
+
+# create_html(pothole_images)  # create html file with table of detected pothole image and gmaps location
