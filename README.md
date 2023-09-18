@@ -11,3 +11,5 @@ A website that allows anyone to upload Dashcam videos from their Tesla (eventual
 Using (https://github.com/crrystalz/tesla-dashcam-geotagger/tree/main)
 
 Using (https://gitlab.com/-/snippets/2215069)
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
