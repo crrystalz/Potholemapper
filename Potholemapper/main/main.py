@@ -11,8 +11,6 @@ from PIL.ExifTags import GPSTAGS, TAGS
 
 from gmap_downloader import GoogleMapDownloader, GoogleMapsLayers
 
-video_dir = f"../testing/videos/1.mp4"
-
 image_raw_dir = f"../testing/images_mapillary/"
 image_geotagged_dir = f"../testing/images_proccessed/"
 
@@ -101,7 +99,7 @@ def gmaps(filename):
         return gmaps
 
 
-def find_files_with_exif():
+def find_files_with_exif(image_raw_dir, image_geotagged_dir):
     print("Clearing out geotagged image directory...")
     for root, dirs, files in os.walk(image_geotagged_dir):
         for f in files:
@@ -262,30 +260,30 @@ def create_html(pothole_images):
     print()
     print()
 
+def main(image_raw_dir, image_geotagged_dir, output_dir, model_path):
+    find_files_with_exif(image_raw_dir, image_geotagged_dir)  # find files in mapillary directory that have exif data nad move to processed directory
 
-# find_files_with_exif()  # find files in mapillary directory that have exif data nad move to processed directory
+    detect(image_geotagged_dir, output_dir, model_path)  # detect function (run yolo)
 
-# detect(image_geotagged_dir, output_dir, model_path)  # detect function (run yolo)
+    map = folium.Map(location = [37.40, -122.13], zoom_start = 15)
 
-map = folium.Map(location = [37.40, -122.13], zoom_start = 15)
+    pothole_images = find_pothole_frames(
+        output_dir
+    )  # get list of images that were detected to have potholes
 
-pothole_images = find_pothole_frames(
-    output_dir
-)  # get list of images that were detected to have potholes
+    for annoted_image_dir, geotagged_image_dir, filename in pothole_images:
+        print(filename)
+        gmaps_link = gmaps(filename) # prints and returns gmaps link
 
-for annoted_image_dir, geotagged_image_dir, filename in pothole_images:
-    print(filename)
-    gmaps_link = gmaps(filename) # prints and returns gmaps link
+        image = Image.open(geotagged_image_dir)
+        x, y = check_and_get_exif_loc(image)
+        if x:
+            gps_coords = y
+        
+            dec_lat, dec_lon = exif_loc_to_lat_lon(gps_coords)
 
-    image = Image.open(geotagged_image_dir)
-    x, y = check_and_get_exif_loc(image)
-    if x:
-        gps_coords = y
-    
-        dec_lat, dec_lon = exif_loc_to_lat_lon(gps_coords)
+            folium.Marker([dec_lat, dec_lon], popup='Point').add_to(map)
 
-        folium.Marker([dec_lat, dec_lon], popup='Point').add_to(map)
+    map.save("map.html")
 
-map.save("map.html")
-
-# create_html(pothole_images)  # create html file with table of detected pothole image and gmaps location
+    # create_html(pothole_images)  # create html file with table of detected pothole image and gmaps location

@@ -1,6 +1,6 @@
-train: /Users/rrishi/Documents/coding/Potholemapper_archived/Pothole Detection Model/training
-val: /Users/rrishi/Documents/coding/Potholemapper_archived/Pothole Detection Model/validation
-test: /Users/rrishi/Documents/coding/Potholemapper_archived/Pothole Detection Model/test
+train: /Users/rrishi/Desktop/coding/Potholemapper/Potholemapper/detection_model/training
+val: /Users/rrishi/Desktop/coding/Potholemapper/Potholemapper/detection_model/validation
+test: /Users/rrishi/Desktop/coding/Potholemapper/Potholemapper/detection_model/test
 
 nc: 1
 names: ['Potholes']
