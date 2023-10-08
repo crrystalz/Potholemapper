@@ -1,91 +1,60 @@
-import os
-import shutil
-
-import cv2
-import base64
-
-from dash import Dash, dcc, html, Input, Output, State, callback
-from dash.exceptions import PreventUpdate
-
-from test_script import test
-
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import ttk
 from main import main
 
-app = Dash(__name__)
+def select_directory(label):
+    dir_path = filedialog.askdirectory(title="Select a Directory")
+    label['text'] = dir_path  # update label text to selected directory path
 
-app.layout = html.Div(
-    [
-        dcc.Upload(
-            id="upload-video",
-            children=html.Div(["Drag and Drop or ", html.A("Select .mp4")]),
-            style={
-                "width": "100%",
-                "height": "60px",
-                "lineHeight": "60px",
-                "borderWidth": "1px",
-                "borderStyle": "dashed",
-                "borderRadius": "5px",
-                "textAlign": "center",
-                "margin": "10px",
-            },
-            # Allow multiple files to be uploaded
-            multiple=True,
-        ),
-        dcc.Upload(
-            id="upload-gpx",
-            children=html.Div(["Drag and Drop or ", html.A("Select .gpx")]),
-            style={
-                "width": "100%",
-                "height": "60px",
-                "lineHeight": "60px",
-                "borderWidth": "1px",
-                "borderStyle": "dashed",
-                "borderRadius": "5px",
-                "textAlign": "center",
-                "margin": "10px",
-            },
-            # Allow multiple files to be uploaded
-            multiple=False,
-        ),
-        html.Div(id="output-video-upload"),
-    ]
-)
+def select_file(label):
+    file_path = filedialog.askopenfilename(title="Select a File")
+    label['text'] = file_path  # update label text to selected file path
 
+def analyze(dashcam_video_dir, gpx_filepath, model_filepath):
+    print(dashcam_video_dir)
+    print(gpx_filepath)
+    print(model_filepath)
+    working_dir = "working_dir"
+    output_html_filepath = "results.html"
+    main(dashcam_video_dir, gpx_filepath, model_filepath, working_dir, output_html_filepath)
+    root.quit()
 
-@callback(
-    Output("output-video-upload", "children"),
-    Input("upload-video", "contents"),
-    Input("upload-gpx", "contents"),
-)
-def uploaded(video_contents, gpx_contents):
-    if video_contents is None or gpx_contents is None:
-        raise PreventUpdate
+root = tk.Tk()
+root.title("Directory and File Selector")
 
-    else:
-        video_type, video_string = video_contents.split(",")
-        gpx_type, gpx_string = gpx_contents.split(",")
+# Apply some styling
+style = ttk.Style()
+style.configure('TButton', font=('Arial', 10), padding=5)
+style.configure('TLabel', font=('Arial', 10), padding=5, background='#ececec')
 
-        with open("uploaded.mp4", "wb") as f:
-            f.write(base64.b64decode(video_string))
+# Use Frame to hold widgets and apply background color
+frame = ttk.Frame(root, padding=10, style='TFrame')
+frame.pack(fill='both', expand=True)
 
-        with open("uploaded.gpx", "wb") as f:
-            f.write(base64.b64decode(gpx_string))
+# First directory selection
+label1 = ttk.Label(frame, text="Select Tesla Dashcam directory", width=50, anchor='w')
+label1.pack(fill='x')
+button1 = ttk.Button(frame, text="Browse", command=lambda: select_directory(label1))
+button1.pack()
 
+# Second directory selection
+label2 = ttk.Label(frame, text="Select the .GPX file", width=50, anchor='w')
+label2.pack(fill='x')
+button2 = ttk.Button(frame, text="Browse", command=lambda: select_file(label2))
+button2.pack()
 
-        # os.system(
-        # 'mapillary_tools video_process uploaded.mp4 --geotag_source "gpx" --geotag_source_path uploaded.gpx --interpolation_use_gpx_start_time --video_sample_distance -1 --video_sample_interval 2'
-        # )
+# File selection
+label3 = ttk.Label(frame, text="Select the Yolo model file", width=50, anchor='w')
+label3.pack(fill='x')
+button3 = ttk.Button(frame, text="Browse", command=lambda: select_file(label3))
+button3.pack()
 
-        # image_raw_dir = "mapillary_sampled_video_frames/uploaded.mp4"
-        # image_geotagged_dir = "confirmed_geotagged_images/"
-        # output_dir = "yolo_output/"
-        # model_path = "../detection_model/yolov8x_tesladataset1.pt"
+# Quit button
+button_quit = ttk.Button(frame, text="Quit", command=root.quit)
+button_quit.pack()
 
-        # os.mkdir(image_geotagged_dir)
-        # os.mkdir(output_dir)
+button_analyze = ttk.Button(frame, text="Analyze", command=lambda: analyze(label1['text'], label2['text'], label3['text']))
+button_analyze.pack()
 
-        # main(image_raw_dir, image_geotagged_dir, output_dir, model_path)
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+root.mainloop()
