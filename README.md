@@ -1,4 +1,19 @@
 # 🛣️ Potholemapper
+## Table Of Contents
+- [🛣️ Potholemapper](#️-potholemapper)
+  - [Table Of Contents](#table-of-contents)
+  - [Goal](#goal)
+  - [Inference Flowchart](#inference-flowchart)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Running the Application](#running-the-application)
+    - [User Interface](#user-interface)
+  - [Project Structure](#project-structure)
+  - [Contributing](#contributing)
+  - [Links](#links)
+
 ## Goal
 A website that allows anyone to upload Dashcam videos from their Tesla (eventually support for any dashcam) and then automatically detects potholes on the road using a custom-trained and tuned YOLOv8 deep learning model. Then given the corresponding ``.gpx`` file, the location of the detected potholes is found and then mapped allowing other users to see where potholes are in their routes. This database of known potholes and their locations can then be used by other organizations as well.
 
