@@ -14,18 +14,18 @@ Before you can use this project, you need to ensure the following prerequisites 
 * YOLOv8 (or any YOLO model of your choice)
 ## Installation
 1. Clone the repository to your local machine:
-```
+```bash
 git clone https://github.com/crrystalz/Potholemapper.git
 ``````
 2. Navigate to the project directory:
-```
+```bash
 cd Potholemapper/Potholemapper
 ```
 ## Usage
 ### Running the Application
 To run the application, you should start from the app.py file in ``Potholemapper/Potholemapper/main/app.py``. This file provides a graphical user interface (GUI) for selecting the input directories and files required for pothole detection.
 
-```
+```bash
 python app.py
 ```
 ### User Interface
