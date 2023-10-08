@@ -5,6 +5,8 @@
 testing/
 # data/
 
+main/working_dir
+
 detection_model/datasets/
 detection_model/runs/
 detection_model/test/
