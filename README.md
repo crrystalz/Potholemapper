@@ -1,7 +1,7 @@
 # 🛣️ Potholemapper
-## Table Of Contents
+## Table of Contents
 - [🛣️ Potholemapper](#️-potholemapper)
-  - [Table Of Contents](#table-of-contents)
+  - [Table of Contents](#table-of-contents)
   - [Goal](#goal)
   - [Inference Flowchart](#inference-flowchart)
   - [Getting Started](#getting-started)
