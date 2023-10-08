@@ -87,9 +87,9 @@ def main(
     # create_html(pothole_images)  # create html file with table of detected pothole image and gmaps location
 
 
-model_path = "/home/saswat/pothole-data/yolov8x_tesladataset1.pt"
-dashcam_video_dir = "/media/saswat/TESLADRIVE/TeslaCam/SavedClips"
-working_dir = "raw_videos"
-gpx_filepath = "/home/saswat/pothole-data/0923-third-attempt.gpx"
+model_path = f"../detection_model/yolov8x_tesladataset1.pt"
+dashcam_video_dir = f"D:/TeslaCam/SavedClips"
+working_dir = f"../testing/working_dir"
+gpx_filepath = f"../data/3.gpx"
 
 # main(dashcam_video_dir, gpx_filepath, model_path, working_dir, "results.html")
