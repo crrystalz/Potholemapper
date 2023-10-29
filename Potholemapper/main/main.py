@@ -14,6 +14,7 @@ from colorama import Fore
 from PIL import Image
 from PIL.ExifTags import GPSTAGS, TAGS
 
+
 def _detect(geotagged_images_dir, yolo_output_dir, model_path):
     print("Clearing out yolo output directory...")
     create_or_empty_directory(yolo_output_dir)
@@ -63,8 +64,7 @@ def _find_pothole_frames(geotagged_images_dir, yolo_output_dir):
             print(f"{folder} has a detected pothole(s)")
             for filename in os.listdir(os.path.join(yolo_output_dir, folder)):
                 if filename.endswith(".png") or filename.endswith(".jpg"):
-                    pothole_images.append(
-                        os.path.join(geotagged_images_dir, filename))  
+                    pothole_images.append(os.path.join(geotagged_images_dir, filename))
         else:
             pass
             print(f"{folder} has no detected pothole(s)")
@@ -72,20 +72,25 @@ def _find_pothole_frames(geotagged_images_dir, yolo_output_dir):
     return pothole_images
 
 
-def main(dashcam_video_dir, gpx_filepath, model_path, working_dir, output_html_filepath):
-
+def main(
+    dashcam_video_dir, gpx_filepath, model_path, working_dir, output_html_filepath
+):
     geotagged_images_dir = geotag(dashcam_video_dir, working_dir, gpx_filepath)
 
     yolo_output_dir = os.path.join(working_dir, "yolo_output")
-    pothole_images = _detect(geotagged_images_dir, yolo_output_dir, model_path)  # detect function (run yolo)
+    pothole_images = _detect(
+        geotagged_images_dir, yolo_output_dir, model_path
+    )  # detect function (run yolo)
 
-    map_ = folium.Map(location=[37.40, -122.13], zoom_start=15)  # renamed to map_ to avoid shadowing the built-in map function
+    map_ = folium.Map(
+        location=[37.40, -122.13], zoom_start=15
+    )  # renamed to map_ to avoid shadowing the built-in map function
 
     for geotagged_image_filepath in pothole_images:
         print(geotagged_image_filepath)
-        #image = Image.open(geotagged_image_filepath)
-        dec_lat, dec_lon= find_lat_lon_of_image(geotagged_image_filepath)
-        
+        # image = Image.open(geotagged_image_filepath)
+        dec_lat, dec_lon = find_lat_lon_of_image(geotagged_image_filepath)
+
         # Embed the image within the popup using HTML
         image_path = os.path.basename(geotagged_image_filepath)
         data_url = image_to_data_url(geotagged_image_filepath)
@@ -98,7 +103,9 @@ def main(dashcam_video_dir, gpx_filepath, model_path, working_dir, output_html_f
 
 
 dashcam_video_dir = f"F:/TeslaCam/SavedClips"
-gpx_filepath = f"C:/Users/rrishi/Desktop/coding/Potholemapper/pothole-data/0923-third-attempt.gpx"
+gpx_filepath = (
+    f"C:/Users/rrishi/Desktop/coding/Potholemapper/pothole-data/0923-third-attempt.gpx"
+)
 model_path = f"C:/Users/rrishi/Desktop/coding/Potholemapper/pothole-data/yolov8x_tesladataset1.pt"
 working_dir = f"working_dir"
 output_html_filepath = f"results.html"

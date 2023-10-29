@@ -4,6 +4,7 @@ import sys
 import time
 import base64
 
+
 def load_anim():
     blah = "..........."
     for l in blah:
@@ -14,7 +15,7 @@ def load_anim():
 
 def image_to_data_url(filepath):
     with open(filepath, "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
     return f"data:image/png;base64,{encoded_string}"
 
 
@@ -27,7 +28,7 @@ def create_or_empty_directory(dir_path):
             print(f"Directory {dir_path} and its contents have been removed")
         except Exception as e:
             print(f"Error removing directory {dir_path}: {e}")
-    
+
     # Recreate the directory
     try:
         os.makedirs(dir_path)
