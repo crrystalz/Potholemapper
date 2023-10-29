@@ -1,12 +1,11 @@
-*.pyc
-*.DS_Store
 *.pt
+*.vscode
 
 testing/
 # data/
 
-main/working_dir
-main/results.html
+main/__pycache__/
+main/working_dir/
 
 detection_model/datasets/
 detection_model/runs/

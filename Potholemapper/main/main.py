@@ -3,15 +3,16 @@ import sys
 import time
 import shutil
 import colorama
-import folium
 
-from util import create_or_empty_directory
+import folium
+from folium import Popup
+
+from util import create_or_empty_directory, image_to_data_url
 from geotag import find_lat_lon_of_image, geotag
 
 from colorama import Fore
 from PIL import Image
 from PIL.ExifTags import GPSTAGS, TAGS
-
 
 def _detect(geotagged_images_dir, yolo_output_dir, model_path):
     print("Clearing out yolo output directory...")
@@ -20,6 +21,7 @@ def _detect(geotagged_images_dir, yolo_output_dir, model_path):
     print()
     print()
 
+    i = 0
     for filename in os.listdir(geotagged_images_dir):
         f = os.path.join(geotagged_images_dir, filename)
         if os.path.isfile(f) and (
@@ -29,6 +31,11 @@ def _detect(geotagged_images_dir, yolo_output_dir, model_path):
             print(command)
             os.system(command)
             print(f"Succesfully processed: {filename}")
+
+        if i == 10:
+            break
+
+        i += 1
 
     print("Successfully processed all images")
     print()
@@ -56,40 +63,44 @@ def _find_pothole_frames(geotagged_images_dir, yolo_output_dir):
             print(f"{folder} has a detected pothole(s)")
             for filename in os.listdir(os.path.join(yolo_output_dir, folder)):
                 if filename.endswith(".png") or filename.endswith(".jpg"):
-                    pothole_images.append(os.path.join(geotagged_images_dir, filename))
+                    pothole_images.append(
+                        os.path.join(geotagged_images_dir, filename))  
         else:
             pass
-            # print(f"{folder} has no detected pothole(s)")
+            print(f"{folder} has no detected pothole(s)")
 
     return pothole_images
 
 
-def main(
-    dashcam_video_dir, gpx_filepath, model_path, working_dir, output_html_filepath
-):
+def main(dashcam_video_dir, gpx_filepath, model_path, working_dir, output_html_filepath):
+
     geotagged_images_dir = geotag(dashcam_video_dir, working_dir, gpx_filepath)
 
     yolo_output_dir = os.path.join(working_dir, "yolo_output")
-    pothole_images = _detect(
-        geotagged_images_dir, yolo_output_dir, model_path
-    )  # detect function (run yolo)
+    pothole_images = _detect(geotagged_images_dir, yolo_output_dir, model_path)  # detect function (run yolo)
 
-    map = folium.Map(location=[37.40, -122.13], zoom_start=15)
+    map_ = folium.Map(location=[37.40, -122.13], zoom_start=15)  # renamed to map_ to avoid shadowing the built-in map function
 
     for geotagged_image_filepath in pothole_images:
         print(geotagged_image_filepath)
-        # image = Image.open(geotagged_image_filepath)
-        dec_lat, dec_lon = find_lat_lon_of_image(geotagged_image_filepath)
-        folium.Marker([dec_lat, dec_lon], popup="Point").add_to(map)
+        #image = Image.open(geotagged_image_filepath)
+        dec_lat, dec_lon= find_lat_lon_of_image(geotagged_image_filepath)
+        
+        # Embed the image within the popup using HTML
+        image_path = os.path.basename(geotagged_image_filepath)
+        data_url = image_to_data_url(geotagged_image_filepath)
+        popup_content = f'<img src="{data_url}" alt="Pothole Image" width="200px">'
+        popup = Popup(popup_content, max_width=300)
 
-    map.save(output_html_filepath)
+        folium.Marker([dec_lat, dec_lon], popup=popup).add_to(map_)
 
-    # create_html(pothole_images)  # create html file with table of detected pothole image and gmaps location
+    map_.save(output_html_filepath)
 
 
-model_path = f"../detection_model/yolov8x_tesladataset1.pt"
-dashcam_video_dir = f"D:/TeslaCam/SavedClips"
-working_dir = f"../testing/working_dir"
-gpx_filepath = f"../data/3.gpx"
+dashcam_video_dir = f"F:/TeslaCam/SavedClips"
+gpx_filepath = f"C:/Users/rrishi/Desktop/coding/Potholemapper/pothole-data/0923-third-attempt.gpx"
+model_path = f"C:/Users/rrishi/Desktop/coding/Potholemapper/pothole-data/yolov8x_tesladataset1.pt"
+working_dir = f"working_dir"
+output_html_filepath = f"results.html"
 
-# main(dashcam_video_dir, gpx_filepath, model_path, working_dir, "results.html")
+main(dashcam_video_dir, gpx_filepath, model_path, working_dir, output_html_filepath)

@@ -10,6 +10,7 @@ setup(
     install_requires=[
         'ultralytics',
         'mapillary_tools',
-        'exifread'
+        'folium',
+        'tk',
     ],
 )
